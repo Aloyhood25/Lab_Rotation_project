@@ -1,0 +1,17 @@
+Sperm motility analysis pipeline
+
+The goal of this lab rotation is to develop an analysis pipeline for sperm motility measurements of different insect species in the tudaz lab. To warm up, I suggest working through the R script “CopyOfanalysis sperm motility SF_sperm age interaction copy for Nnamdi.R” and the scripts for Suse’s sperm motility data. But I will give Nnamdi later this week. After that, we can meet and continue with the next steps mentioned below.
+
+How do we want to achieve this?
+
+First, we need to develop a generic data sheet in Excel. This file should be very general so it can be used for many different types of experiments that have sperm motility as a response variable.
+
+So try to come up with some suggestions for column headers or just make a template sheet in Excel on which we can work in the following weeks.
+
+Second, we need to develop an R script that can extract all necessary information and data to visualise the data according to the research questions investigated with a given experiment. This might involve some rearranging of the data frame.
+
+Third, develop the code to plot the data, such as a graph showing mean motilities across treatments or treatment combinations, etc. We also have to think about what other variables we need to properly visualise the data, for example, maximum sperm motility or interquartile range of motility.
+
+Fourth, develop the code for a statistical analysis of the stuff we show in the graphs.
+
+I think that is a good start.
