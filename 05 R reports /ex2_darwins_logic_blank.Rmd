@@ -1,0 +1,285 @@
+---
+title: "Introduction to R Notebook and Darwin's Logic"
+output:
+  html_notebook:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    keep_md: TRUE
+---
+
+## Author: Your name and student ID
+
+------------------------------------------------------------------------
+
+# 1. Initiate the Project
+
+------------------------------------------------------------------------
+
+## 1.1. Dependencies
+
+```{r message=FALSE}
+#This command loads required packages
+library(ggplot2)
+```
+
+------------------------------------------------------------------------
+
+# 2. The Cave Molly and its Ancestors
+
+To wrap our head around some of the basic observations that led Darwin to infer natural selection, we will spend a little bit of time with the cave molly. The cave molly (*Poecilia mexicana*) is a small species of livebearing fish that occurs in a couple of small caves in Southern Mexico. One of the caves, the Cueva Luna Azufre, has a wetted area of only 39 square-meters. Even though the available habitat is really small, there has been an isolated population of cave mollies in this cave for several thousand years. Interestingly, mollies also occur in adjacent surface habitats. In the picture below, you can see the a male and a female of the surface (top two pictures) and the cave form (bottom two pictures) side by side.
+
+![](mollies.png)
+
+------------------------------------------------------------------------
+
+# 3. The Struggle for Existence
+
+The first set of observations that led Darwin to infer the process of natural selection related to the imbalance of organisms' reproductive power and limitations of resource availability. Quantifying the effective reproductive output and resource availability in nature can be difficult. However, what we can do is to measure proxies for these traits and then use simple mathematical models to test whether our predictions and inferences are valid. Here, we use exponential and logistic population growth models to explore whether there is really a struggle for existence in cave mollies.
+
+------------------------------------------------------------------------
+
+## 3.1. Observation 1: Populations Have a Huge Reproductive Potential
+
+Even large animals with long generation times have an incredible reproductive potential. Cave mollies---as many other cave organisms---have a comparatively low fecundity, and females only give birth to one or two fully developed young at a time. Life history analyses based on female longevity and fecundity have revealed that the average female gives birth to about 3 offspring over her life; not exactly what you would call huge reproductive potential, right? But in reality, it is not the reproductive potential of individuals that counts, but the reproductive potential of populations. To illustrate this point, we want you to model population growth for a hypothetical population of cave mollies. Specifically, use the code below to simulate and graph the population growth of an initial cave molly population of 2 individuals (the initial colonizers of the cave).
+
+How many generations would it take for the population to grow to a million? Under what circumstances might you see population growth like this? Do you think Darwin's observation that "species have great potential fertility" holds true for cave mollies?
+
+```{r}
+#Choose an initial population size
+N0 = ?
+
+#Choose the average number of offspring
+b = ?
+
+#Choose a range of generations you want to estimate population size for; default is generation 0 to 15
+t = 0:15
+
+#Calculate the population size for each generation
+N = N0*b^t
+
+#Merge the results of the simulation into a single table
+final.results <- as.data.frame(cbind(t,N))
+
+#You can view the results by just calling the data frame
+print(final.results)
+
+#Plot the results, make sure you properly label the axes
+ggplot(final.results, aes(x=t, y=N)) + 
+  geom_point() + 
+  xlab("?") + 
+  ylab("?") +
+  theme_classic()
+
+```
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 3.2. Observation 2: Natural Resources are Limited
+
+Exponential growth only occurs in very specific circumstances. In a cave that is only the fraction of the size of a football field, you would obviously never find a cave molly population of a million. The logistic model more accurately describes population growth in nature. Based on our past analyses, we estimate the population growth coefficient (𝛌) to be around 1.3 and the carrying capacity (*K*) of the cave around 360 individuals.
+
+How long would it take for the population to reach the carrying capacity if there were two initial colonizers? What do you think determines *K* for the population of cave mollies in the Cueva Luna Azufre?
+
+```{r}
+#Choose an initial population size
+N0 = ?
+#Choose population growth rate
+lamda = ?
+#Choose a range of generations you want to estimate population size for
+t = ?
+#Choose a carrying capacity
+K = ?
+#Calculate the population size for each generation
+N = (N0*K)/(N0+(K-N0)*exp(-lamda*t))
+#Merge the results of the simulation into a single table
+final.results <- as.data.frame(cbind(t,N))
+#Use the ggplot function to plot the results, make sure you properly label the axes
+ggplot(final.results, aes(x=t, y=N)) + 
+  geom_point() + 
+  xlab("?") + 
+  ylab("?") +
+  theme_classic()
+```
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 3.3. Where Do All the Missing Offspring Go?
+
+Compare the two models (exponential and logistic) that were ran with the same initial parameters. What do the different outcomes mean for individual offspring that are born in any given generation? How might this discrepancy important in the context of evolution?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+# 4. Individuals Vary in Their Traits
+
+Another of Darwin's key observations was just how variable individuals of the same species are. Let's explore some of that variation in cave mollies. To do that, we first need to load some data into R. These data were collected as part of my dissertation and include the following variables: habitat (cave or surface), sex (male or female), standard length (in mm, from the snout to the caudal fin base), eye diameter (in mm), head length (in mm), head width (in mm), predorsal length (in mm, from the snout to the insertion of the dorsal fin), and gape width (in mm, from one corner of the mouth to the other).
+
+```{r}
+#Use the read.csv function to import a dataset; take a look at the data structure once you imported the file!
+morph.data <- read.csv("morphological_variation.csv", fileEncoding = 'UTF-8-BOM')
+```
+
+------------------------------------------------------------------------
+
+## 4.1. Comparing Body Size Variation Within and Between Populations
+
+A simple way to compare variation within and between populations is to plot a frequency histogram (which represents the raw counts) along with a density plot (which represents the approximated statistical distribution). You can generate a histogram with the `geom_histogram()` function and designate any trait you may want as the x axis. You can calculate the density with `aes(y=..density..)` within `geom_histogram()` and then plot it with `geom_density()`. Note that when you have more than two groups (in our case we have samples from a cave and a surface population), you can visualize them separately by designating a different color for each group in the aesthetics (`fill=Habitat`).
+
+When you visualize body size variation in this manner what do you observe? Is there more variation within or between populations?
+
+```{r message=FALSE}
+#Use the ggplot function to graph the histogram (see: http://www.sthda.com/english/wiki/ggplot2-histogram-plot-quick-start-guide-r-software-and-data-visualization)
+ggplot(morph.data, aes(x=Standard.length, fill=Habitat)) + 
+  geom_histogram(aes(y=..density..)) +
+  geom_density(alpha=0.5)+
+  xlab("?") + 
+  ylab("?") +
+  theme_classic()
+```
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 4.2. Comparing Predorsal Length Variation Within and Between Populations
+
+Let's also compare a second trait, predorsal length. With the previous graph you hopefully saw how variable overall body size is within populations. If we want to compare other traits, we have to account for that. We want to know whether variation in predorsal length is due to variation in size (small fish have small predorsal lengths) or whether other patterns might be at play. To do so, we can calculate the residual predorsal length as from a regression between predorsal and standard length using the `lm(y ~ x, data)` and `residuals()` functions:
+
+```{r}
+#Calculating regression line
+fit1 <- lm(Predorsal.length ~ Standard.length, data = morph.data)
+
+#Extract residuals and create a new variable res.predorsal in the morph.data data frame
+morph.data$res.predorsal <- residuals(fit1)
+```
+
+You can then use the new variable to plot the residual predorsal length, which is corrected for body size:
+
+```{r message=FALSE}
+##Use the ggplot function to graph the histogram and color data based on habitat
+ggplot(morph.data, aes(x=?, fill=?)) +
+  geom_histogram(aes(y=..density..)) +
+  geom_density(alpha=0.5)+
+  xlab("?") + 
+  ylab("?") +
+  theme_classic()
+```
+
+When you plot relative predorsal length, what do you observe? How does variation in predorsal length vary within and between populations, and how does it compare to variation in standard length?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 4.3. Comparing Eye Size Variation Within and Between Populations
+
+Using the same approach as for predorsal variation, compare variation in relative eye diameter:
+
+```{r message=FALSE}
+#Your code goes here
+fit2 <- ?
+
+#Extract residuals and create a new variable res.predorsal in the morph.data data frame
+?
+
+##Use the ggplot function to graph the histogram and color data based on habitat
+ggplot(?)
+```
+
+What do you observe? How does variation in eye diameter vary within and between populations, and how does it compare to variation in the other traits?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+# 5. Variation in Traits is Heritable
+
+An avid breeder of fancy pigeons, Darwin observed that specific traits are passed from parents to offspring, even though he had no clue how this might actually work (genetics was not really a thing yet). Even without an ability to conduct molecular genetic analyses, we can estimate heritability of traits by comparing the traits of offspring to the traits of the parents.
+
+Let's load some data that compares parent and offspring traits in cave mollies. To do this, we brought cave mollies into the lab and bred them under standardized conditions. Data represent the average trait values of the mother and father and of all offspring from a specific brood. The easiest way to compare parent and offspring traits is through a scatter plot, which we already used in Exercise 1. If a trait is heritable, we would expect to see a correlation between parent and offspring traits (e.g., parents with small eyes should have offspring with small eyes).
+
+The following dataset includes measurements of parental and offspring standard length as well as eye size.
+
+```{r}
+#Use the read.csv function to import a dataset; take a look at the data structure once you imported the file!
+heritability <- read.csv("heritability.csv", fileEncoding = 'UTF-8-BOM')
+```
+
+------------------------------------------------------------------------
+
+## 5.1. Heritability of Standard Length
+
+First, let us explore whether there is evidence for heritability in standard length.
+
+What do you observe? Is standard length a heritable trait?
+
+```{r message=FALSE}
+ggplot(heritability, aes(x=parent.standard.length, y=offspring.standard.length)) + 
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  xlab("?") + 
+  ylab("?") +
+  theme_classic()
+```
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 5.2. Heritability of Eye Size
+
+Now let us explore whether there is any heritability in eye size. Remember, there is substantial variation in body size, and in such cases, we want to control for body size by calculating residual eye size first.
+
+```{r message=FALSE}
+##Calculate residual eye sizes for the partents and the offspring
+#Your code goes here:
+?
+
+#Plot the results
+ggplot(?)
+```
+
+What do you observe? Is standard length a heritable trait?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+# 6. What Would Happen If...?
+
+Imagine for a moment that smaller fish have a higher likelihood of survival in the cave. Would you expect evolution of body size upon cave colonization?
+
+Imagine for a moment that fish with smaller eyes have a higher likelihood of survival in the cave. Would you expect evolution of eye size upon cave colonization? Justify your response.
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+# 7. Resources
+
+------------------------------------------------------------------------
+
+## 7.1. Data References
+
+The eye size data was published in the following paper. Other measurements are unpublished data by M. Tobler.
+
+-   McGowan, K. L., C. N. Passow, L. Arias Rodriguez, M. Tobler & J. L. Kelley (2019): [Expression analyses of cave mollies (*Poecilia mexicana*) reveal key genes involved in the early evolution of eye regression](https://royalsocietypublishing.org/doi/10.1098/rsbl.2019.0554). *Biology Letters* 15 (10): 20190554.
+
+------------------------------------------------------------------------
+
+## 7.2 Resources You Consulted
+
+Consulting additional resources to solve this assignment is absolutely allowed, but failure to disclose those resources is plagiarism. Please list any collaborators you worked with and resources you used below or state that you have not used any.
+
+*Your answer goes here.*
