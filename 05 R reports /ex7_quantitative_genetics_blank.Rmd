@@ -1,0 +1,444 @@
+---
+title: "Quantitative Trait Evolution"
+output:
+  html_notebook:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    keep_md: TRUE
+---
+
+## Author: Your name and student ID
+
+------------------------------------------------------------------------
+
+# 0. Installing Required Packages
+
+**Note: Once you have successfully installed all required packages, *I recommend that you delete this section*, including the code snippet below. Also, make sure to keep an eye on the console and respond to any system prompts during installation.**
+
+```{r Install required packages, message=FALSE, warning=FALSE}
+install.packages("qtl")
+install.packages("tidyverse")
+```
+
+------------------------------------------------------------------------
+
+# 1. Initiate the Project
+
+Remember to re-load your packages every time you restart R.
+
+```{r Loading required packages, message=FALSE}
+#Load the required packages
+library(dplyr)
+library(ggplot2)
+library(qtl)
+library(tidyr)
+library(tidyverse)
+```
+
+------------------------------------------------------------------------
+
+# 2. Studying the Response to Selection: Eye Size Evolution in an Isolated Cave Population
+
+In this problem you will apply your knowledge about how quantitative traits evolve and apply the [breeder's equation](https://www.k-state.edu/biology/p2e/the-evolution-of-quantitative-traits.html#calculating-the-response-to-selection). Imagine a population of bugs has been found colonizing an isolated cave, and there is no ongoing gene flow between the cave and surface population. As part of a study into the ecology of the cave bugs, researchers have quantified trait variation of individual bugs in the cave (body size and eye size). In addition, they also quantified the cave bugs' fitness (measured as the number of offspring they produced) and trait variation in the offspring once they reached adulthood. Based on the available data, can you make a prediction about the eye size of the cave bugs after 50 generations of evolution?
+
+------------------------------------------------------------------------
+
+## 2.1. Importing the Data
+
+The data set associated with the problem includes data for body size and eye size for parental bugs, their offspring, as well as a measure of fitness for the parental individuals (offspring number). These types of data should look familiar to you by now (review [exercise 2](https://www.k-state.edu/biology/p2e/a-mechanism-for-change.html#allometry-residuals) if you need a refresher). Load the data contained in the "bug_eyes.csv" file.
+
+```{r}
+bugs <- read.csv("bug_eyes.csv", fileEncoding = 'UTF-8-BOM')
+```
+
+------------------------------------------------------------------------
+
+## 2.2. Heritability
+
+### 2.2.1. Plotting the Data
+
+Make a plot that shows the relationship between parent and offspring eye size, including a trend line.
+
+```{r Plot eye size data}
+
+#Your code goes here
+```
+
+### 2.2.2. Calculating Narrow-Sense Heritability
+
+To apply the breeder's equation, we need to determine [narrow-sense heritability](https://www.k-state.edu/biology/p2e/the-evolution-of-quantitative-traits.html#quantifying-trait-heritability) numerically. To do so, we first have to determine the regression line between parent and offspring traits. Then, we can extract the slope of the regression. You can use the `lm()` function the same way you used it in the previous exercise.
+
+Specify the relevant x and y variables for the regression below. As before, the math behind calculating linear regressions is not that important at this stage, but if you want to learn more about regressions, check out [this resource](https://www.datacamp.com/community/tutorials/linear-regression-R).
+
+```{r Calculate heritability}
+#Regression of parent and offspring traits
+regression <- lm(y? ~ x?, data = bugs)
+
+#Extract the slope of the regression line, which respresents the narrow-sense heritability
+h2 <- coef(regression)[[2]]
+h2
+```
+
+------------------------------------------------------------------------
+
+## 2.3. Strength of Selection
+
+### 2.3.1. Plotting the Data
+
+To apply the breeder's equation, we also need to calculate the [selection differential](https://www.k-state.edu/biology/p2e/the-evolution-of-quantitative-traits.html#quantifying-the-strength-of-selection) based on the relationship between the trait under consideration and individual fitness. Since we are dealing with a continuous measurement of fitness, you first need to calculate the selection gradient, which you can then convert to the selection differential.
+
+In a first step, make a plot that shows the relationship between fitness and eye size, including a trend line. Make sure you convert the absolute measures of fitness to relative fitness first.
+
+```{r}
+#Your code goes here.
+```
+
+### 2.3.2. Calculating the Selection Differential
+
+To calculate the selection gradient, you can simply determine the slope of a regression between fitness and the trait of interest, using the same code as for the calculation of heritability. Note that you will also need to calculate the variance of your trait of interest, if you want to convert the selection gradient to the selection differential. To calculate the variance, you can use the `var()` function from R's base package.
+
+```{r}
+#Your code goes here.
+```
+
+------------------------------------------------------------------------
+
+## 2.4. Calculating the Response to Selection
+
+Now that you calculated the narrow-sense heritability and the selection differential, you can use the [breeder's equation](https://www.k-state.edu/biology/p2e/the-evolution-of-quantitative-traits.html#calculating-the-response-to-selection) to calculate how large the cave population's eye size will be after 50 generations of evolution in a cave environment.
+
+```{r Calculate response to selection}
+#eye size at generation 0
+t0 =
+
+#response to selection
+R = 
+
+#eye size after 50 generations
+final.eye.size = 
+print(final.eye.size)
+```
+
+*Explain what you found here.*
+
+------------------------------------------------------------------------
+
+## 2.5. Challenging Your Assumptions
+
+The previous model assumed that there was no gene flow between the surface and the cave after the initial colonization. How would your result differ qualitatively, if there actually was gene flow remaining between the cave and surface populations? What other assumptions have you made by applying the breeder's equation above?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+# 3. Identifying quantitative trait loci (QTL)
+
+A key goal when we analyze the evolution of quantitative traits is to identify genes underlying trait expression. One approach to do so, especially when there is discontinuous variation, is to use laboratory crossing experiments between individuals that exhibit different traits. Recombination of genes in later generation hybrids generates continuous variation in phenotypic traits that allows us to ask which molecular markers (loci) correlate with the expression of a particular trait, a process called [QTL mapping](https://www.k-state.edu/biology/p2e/the-evolution-of-quantitative-traits.html#qtl-mapping).
+
+To work through the process of QTL mapping, we are using an enigmatic study system in evolution: the beach mouse. Pretty cute (for a mammal). ![](mouse.jpg)
+
+Beach mice exhibit a light coat color in response to natural selection for camouflage on white coastal sand dunes. In contrast, a closely related subspecies that inhabits mainland habitats has a dark brown dorsal coat, which provides camouflage in its respective habitats. This is an example of local adaptation to different habitat types.
+
+You can see the comparison of different populations of beach mice, mainland mice, and their distribution here:![](distribution.png)
+
+Among-population differences in coat color are an example of evolution in a quantitative trait. A key question is what genes are underlying the variation that we can readily observe at a phenotypic level? To get at that, we need to generate F2 crosses of beach and mainland mice and quantify the genotypes and phenotypes for a lot of individuals, which then allows us to identify correlations between genetic variation and phenotypic variation. This problem guides you through that process.
+
+------------------------------------------------------------------------
+
+## 3.1. Import in the Data
+
+Here, we are working with a data set from [Hopi Hoekstra's lab at Harvard University](https://hoekstra.oeb.harvard.edu/) that was published a few years ago. This dataset is a little bit more complicated than previous ones you dealt with, because it includes information for a number of phenotypic variables as well as genotype information for dozens of loci throughout the genome. For the record, I simplified the genotype data a little bit; at each locus, an individual can either be homozygous for an allele A, homozygous for an allele B, or it can be heterozygous (AB).
+
+The following code chunk loads your data. It uses the `read.cross()` function from the `qtl` package that specifically imports data from QTL mapping studies. Note that if you get a warning about missing data, you don't need to worry about it. If the import of the data succeeded, you should see a summary of the data, including the number of individuals that were analyzed, the number of loci (markers) that were genotyped, and the number of phenotypic traits that were measured. It also should tell you that type of cross that was conducted, which was an F2 cross in this case.
+
+```{r Importing QTL data, message=FALSE, warning=FALSE}
+mice <- read.cross(format = "csv", dir = "",
+                      file = "./beach_mice2.csv", 
+                      genotypes = c("AA", "AB", "BB"), 
+                      estimate.map = TRUE)
+```
+
+------------------------------------------------------------------------
+
+## 3.2. Explore the Data: Genotypes, Loci & Linkage Map
+
+The authors genotyped all mice at 96 loci that were distributed throughout the genome. As already mentioned, we assume two alleles (A, B) and three possible genotypes (AA, AB, BB) at each locus (note that this is a simplification of the original data set).
+
+Some loci are linked (i.e., they are located on the same chromosome), and the relationship between different loci can be visualized with a genetic map using the plotMap function. Each locus is represented by a vertical dash, and you can see that the researchers have genotyped individuals for multiple loci on some chromosomes and just one or two on others.
+
+```{r Show linkage map, message=FALSE, warning=FALSE}
+plotMap(mice, show.marker.names = FALSE)
+```
+
+How many loci were analyzed on chromosome 11?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 3.3. Explore the Data: Phenotypes
+
+By calling `mice$pheno`, you can see all the different phenotypic traits that were measured in this study. Essentially, the researchers quantified coat color variation on different body parts (rostrum, cheek eye brow, etc.), scoring them from light colors (low numbers) to dark colors (high numbers).
+
+![](traits.png)
+
+```{r Display trait table, message=FALSE, warning=FALSE, paged.print=TRUE}
+mice$pheno
+```
+
+------------------------------------------------------------------------
+
+### 3.3.1. Phenotypic Trait Distributions: Cheek Color
+
+We can take a look at the distribution of individual phenotypic traits by pulling them into a different data frame and visualize them using a frequency histogram (as we did for other traits in the past). In the first example, we do this for the cheek color data.
+
+```{r Cheek color histogram, message=FALSE, warning=FALSE}
+#Create a new data frame containing a single trait
+cheek.data <- as_tibble(data.frame(mice$pheno$cheek))
+#Add a column name
+colnames(cheek.data) <- c("cheek.color")
+
+#Plot data from the new data frame
+ggplot(cheek.data, aes(x=cheek.color)) + 
+    geom_histogram(binwidth=1) + 
+    theme_classic() +
+    xlab("Cheek color") +
+    ylab("Frquency")
+```
+
+What do you observe? Can you explain why you see this kind of distribution?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+### 3.3.2. Phenotypic Trait Distributions: Other Traits
+
+Check out the distributions of two additional traits of your choice (e.g., rump color, tail color, or whatever traits catches your fancy in the table above). To do so, modify the code to visualize variation in cheek color provided above.
+
+Trait 1:
+
+```{r Trait 1 histogram, message=FALSE, warning=FALSE}
+# Your code goes here
+```
+
+Trait 2:
+
+```{r Trait 2 histogram, message=FALSE, warning=FALSE}
+# Your code goes here
+```
+
+------------------------------------------------------------------------
+
+### 3.3.3. Phenotypic Trait Distributions: Interpretation
+
+What are your general observations about how color varies in different parts of the body? Remember, quantitative traits are supposed to be normally distributed. Can you formulate some alternative hypotheses about why the distributions for some traits don't look very normal? What assumptions may be violated?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 3.4. Finding and Making Sense of QTLs for Variation in Cheek Color
+
+------------------------------------------------------------------------
+
+### 3.4.1. Plotting the Data
+
+Now that we have taken a quick look at the the loci that were genotypes and some of the phenotypic traits, let's try to find correlations between the genotype and the phenotype data. I.e., let's try to identify QTLs that explain variation in a phenotypic trait. Using the `scanone()` function on a particular trait, you can calculate an LOD score for each locus. LOD stands for "[likelihood of odds](https://www.k-state.edu/biology/p2e/the-evolution-of-quantitative-traits.html#qtl-mapping)", which is a metric for how much a given locus is associated with a particular trait. The `scanone()` function looks for correlations between all possible genotype and phenotype pairs.
+
+```{r Mapping cheek color, message=FALSE, warning=FALSE}
+#Identify QTLs for cheek; we conduct a scan for QTLs on the "mice" dataset, focusing on the "cheek" color 
+scan.cheek <- scanone(mice, pheno.col = c("cheek"))
+```
+
+------------------------------------------------------------------------
+
+### 3.4.2. Plotting the Data
+
+We can take a look at the results of our QTL scan by plotting the LOD score for each locus using the plot function. Essentially, a high LOD-score means a high likelihood that a particular trait is influenced by that locus (hence, we call it a quantitative trait locus; a locus that influences that specific quantitative trait). When you plot LOD scores across all loci, the important loci show up as peaks in the plot. Try it!
+
+```{r Visualizing cheek color QTLs, message=FALSE, warning=FALSE}
+#You can then plot the results of your scan
+plot(scan.cheek)
+```
+
+------------------------------------------------------------------------
+
+### 3.4.3. Extracting the Relevant QTLs
+
+The question is of course what loci are exactly under those peaks? We can isolate the relevant loci with the summary function. The threshold here is an arbitrary number (we designate a locus a QTL if LOD is greater than 3). The summary function will return the name of the gene, its location (chromosome and position on the chromosome), as well as the LOD score for all genes that are above the threshold.
+
+```{r  Extracting cheek color QTLs, message=FALSE, warning=FALSE}
+#Find significant genes
+summary(scan.cheek, threshold = 3)
+```
+
+------------------------------------------------------------------------
+
+### 3.4.4. Interpretation
+
+How do you interpret your QTL scan of cheek coloration? What genes appear to control cheek color variation?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 3.5. Finding QTLs for variation in other traits
+
+Using the same approach as for cheek color variation, identify the QTLs associated with variation in the coloration of the traits you plotted above.
+
+------------------------------------------------------------------------
+
+### 3.5.1. Trait 1
+
+First conduct the scan and plot the results:
+
+```{r Mapping trait 1 color, message=FALSE, warning=FALSE}
+#Your code goes here
+
+```
+
+Then extract the QTLs:
+
+```{r Extracting trait 1 color QTLs, message=FALSE, warning=FALSE}
+#Your code goes here
+
+```
+
+------------------------------------------------------------------------
+
+### 3.5.2. Trait 2
+
+First conduct the scan and plot the results:
+
+```{r  Mapping trait 2 color, message=FALSE, warning=FALSE}
+#Your code goes here
+
+```
+
+Then extract the QTLs:
+
+```{r Extracting trait 2 color QTLs, message=FALSE, warning=FALSE}
+#Your code goes here
+
+```
+
+------------------------------------------------------------------------
+
+## 3.6. Interpretation
+
+1.  When you compare the QTLs across different color traits, what do you observe? What are the similarities and what are the differences?
+2.  What do you think the function of the different genes is? Before you answer, consider two tips: (1) MC1R is short for melanocortin-1 receptor; Agouti is short Agouti signaling protein; KIT is short for c-kit receptor. (2) Start with what every good scientist would do in your position: Google.
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+# 4. A Genome Scan for COVID-19 Susceptibility
+
+It is not always trivial to measure quantitative traits. For example, if we are interested in genes associated with disease susceptibility in humans, there is not a simple, ethical way to quantify susceptibility for specific individuals using QTL mapping. However, what we can do in this case is to compare genetic variation at specific loci between individuals that have contracted the disease and individuals that have not. When we compare two dichotomous groups in this manner, we conduct a [Genome-Wide Association Study (GWAS)](https://www.k-state.edu/biology/p2e/the-evolution-of-quantitative-traits.html#gwas). The graphical output for GWAS are similar to QTL mapping in that we are looking for outliers with disproportional contribution to a trait in question. In the case of GWAS, we plot -log~10~(*P*); *P* being the significance value of the allele frequency difference between the case and control groups.
+
+To give you an opportunity to look at the results of a GWAS, I compiled the data from a recent study that tried to identify genes associated with susceptibility to COVID-19. In this particular study, scientists compared the genomes of 2,972 patients with very severe, confirmed SARS-CoV-2 infections to the genomes of a random sample of the population (284,472 individuals total). The original data set included 12,000,000 single nucleotide polymorphisms (SNPs) throughout the human genome. However, to make the data set more manageable for our laptops, I randomly sub-sampled \~500,000 SNPs from the complete dataset for us to look at.
+
+------------------------------------------------------------------------
+
+## 4.1. Import and Visualize Data
+
+Rather than running the GWAS in R ourselves, I am providing you with the output of the analysis in the "COVID19_genomescan_subset.csv" file. The code below creates a simple scatter plot of the -log~10~(*P*)-values for each SNP in the genome, with chromosome position on the x-axis. The first section of the code simply prepares the data for plotting with the `ggplot()` function.
+
+```{r Plot genome scan, message=FALSE, warning=FALSE}
+covid.scan <- read.csv("COVID19_genomescan_subset.csv", fileEncoding = 'UTF-8-BOM')
+
+#This is just to prepare the data for plotting
+covid.scan2 <- covid.scan %>% 
+  
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(POS)) %>% 
+  
+  # Calate cumulative position of each chromosome
+  mutate(tot=cumsum(as.numeric(chr_len))-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(covid.scan, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, POS) %>%
+  mutate( BPcum=POS+tot)
+
+#New axis
+axisdf = covid.scan2 %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+#Plot
+ggplot(covid.scan2, aes(x=BPcum, y=-log10(P))) + 
+    geom_point( aes(color=as.factor(CHR))) + 
+    scale_color_manual(values = rep(c("red", "black"), 40 )) + 
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center) +
+    theme_classic() +
+    xlab("?") +
+    ylab("?") +
+    theme(legend.position = "none")
+```
+
+How would you interpret these results? How would you explain the genetic basis of COVID-19 susceptibility in humans?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 4.2. Genes Associated with the Chromosome 3 Peak
+
+As for QTLs, we can extract the genes associated with outlier SNPs. I have done this for SNPs associated with the clear peak on chromosome 3. The list below provides you with the candidate genes in this region as well as links to their SwissProt entries.
+
+|                                                    |                                                  |
+|-------------------------------------|----------------------------------:|
+| **Protein Annotation**                             |                                    **Accession** |
+| Leucine zipper transcription factor-like protein 1 | [Q9NQ48](https://www.uniprot.org/uniprot/Q9NQ48) |
+| C-C chemokine receptor type 9                      | [P51686](https://www.uniprot.org/uniprot/P51686) |
+| FYVE and coiled-coil domain-containing protein 1   | [Q9BQS8](https://www.uniprot.org/uniprot/Q9BQS8) |
+| C-X-C chemokine receptor type 6                    | [O00574](https://www.uniprot.org/uniprot/O00574) |
+| Chemokine XC receptor 1                            | [P46094](https://www.uniprot.org/uniprot/P46094) |
+
+If you take a look at the candidate genes and their functions, what do you notice? Are there any genes that may be feasibly linked to COVID-19 susceptibility?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+## 4.3 Interpretation
+
+1.  Clearly there is significant genetic variation associated with susceptibility to COVID-19? Does that mean that the heritability of COVID-19 susceptibility is close to 1? Based on your knowledge, what is the potential role of the environment in determining susceptibility to severe COVID-19?
+2.  What is the utility of understanding the genetic basis of susceptibility to COVID-19 for medicine and public health? Can you think of potential applications of this knowledge?
+
+*Your answer goes here.*
+
+------------------------------------------------------------------------
+
+# 5. Resources
+
+------------------------------------------------------------------------
+
+## 5.1. Data References
+
+Genotype and phenotype data associated with beach mouse color variation were kindly provided by Cynthia Steiner and Hopi Hoekstra based on the following work:
+
+-   Steiner CC, Weber JN, Hoekstra HE. 2007. [Adaptive variation in beach mice produced by two interacting pigmentation genes](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0050219). *PLoS Biology* 5: e219.
+
+Data associated with the genome scan between patients with severe COVID-19 infections and the general population came from the [COVID-19 Host Genetics Initiative](https://www.covid19hg.org). For additional information on the initiative, see:
+
+-   The COVID-19 Host Genetics Initiative. 2020. [The COVID-19 Host Genetics Initiative, a global initiative to elucidate the role of host genetic factors in susceptibility and severity of the SARS-CoV-2 virus pandemic](https://doi.org/10.1038/s41431-020-0636-6). *European Journal of Human Genetics* 28: 715--718.
+
+------------------------------------------------------------------------
+
+## 5.2. Resources You Consulted
+
+Consulting additional resources to solve this assignment is absolutely allowed, but failure to disclose those resources is plagiarism. Please list any collaborators you worked with and resources you used below or state that you have not used any.
+
+*Your answer goes here.*
