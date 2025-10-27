@@ -1,0 +1,6 @@
+subject_ID,species,line_population,sperm_length,temperature_level,time,treatment_1,treatment_2,treatment_3,experiment-date,video_file_name,roi1,roi2,roi3
+1,D.melanogaster ,,,low,,young ,seminal fluid,,,,,,
+2,D.suzukii,,,medium,,old ,fem genital fluid,,,,,,
+3,D.bifurca,,,high,,,PBS,,,,,,
+4,,,,,,,,,,,,,
+5,,,,,,,,,,,,,
