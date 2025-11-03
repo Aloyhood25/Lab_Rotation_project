@@ -9,6 +9,13 @@ library(dplR)
 library(dplyr)
 #load data into R
 my_data <- read.csv('01 Raw data /sperm_motility_generic.csv', header=T)
+#Description of variables in the data set
+#sperm_age: age of the sperm sample in days (2, 5, 40, 48)
+#time_points: time points of measurement in minutes (0, 2, 4, 6)
+#treatment_1: presence or absence of seminal fluid (with_SF, without_SF)
+#treatment_2: age of the seminal fluid (young_SF, old_SF)
+#mean_sperm_motility: mean sperm motility measured at each time point
+
 
 head(my_data)
 #assign 'min' to the time points 
