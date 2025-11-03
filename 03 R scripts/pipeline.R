@@ -4,7 +4,7 @@ library(tidyverse)
 library(wesanderson)
 
 #Import data 
-my_data <- read.csv('01 Raw data /College_2.csv')
+my_data <- read.csv('01 Raw data /sf and age effect on sperm motility block one.csv')
 
 #View data structure and summary
 head(my_data)
