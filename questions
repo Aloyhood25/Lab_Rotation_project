@@ -1,6 +1,0 @@
-m1<-lmer(mean_motility_3frames~time.factor+treatment_combination+
-           (1|flyID)+time.factor:treatment_combination,
-         data=my_data)
-
-I discovered from the summary of this mixed-effecet model that only 3 out of the 4 time.factor and 3 out of the 4 treatment_combination was reported.
-is this expected or is it a possible error?
