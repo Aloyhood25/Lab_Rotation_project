@@ -1,0 +1,6 @@
+subject_ID,specie,trial_1,trial_2,trial_3,avg_sperm_motilty,temperature_levels ,sperm_age,medium,sperm_length,experiment-date,video_file_name
+1,D.melanogaster ,,,,,low,young ,seminal fluid,,,
+2,D.suzukii,,,,,medium,old ,fem genital fluid,,,
+3,D.bifurca,,,,,high,,PBS,,,
+4,,,,,,,,,,,
+5,,,,,,,,,,,

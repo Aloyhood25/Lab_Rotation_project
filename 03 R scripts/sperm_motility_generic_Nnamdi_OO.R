@@ -10,7 +10,7 @@ library(dplyr)
 
 
 # 2. Load and Inspect my_data----------------------------
-my_data <- read.csv('01 Raw data/seminal_fluid vs male age interaction.csv')
+my_data <- read.csv(file.choose())
 #acat("my_dataset loaded successfully: ", file_path, "\n")
 head(my_data)
 
@@ -25,6 +25,7 @@ head(my_data)
 response_candidates <- grep("sperm.*motil", names(my_data), ignore.case = TRUE, value = TRUE)
 if (length(response_candidates) == 0) stop("No sperm motility variable found.")
 response_var <- response_candidates[1]
+response_candidates
 cat("Detected response variable:", response_var, "\n")
 
 
@@ -110,6 +111,7 @@ cat("\nFinal variable classification:\n")
 cat("Categorical predictors:", categorical_vars, "\n")
 cat("Numeric predictors:", numeric_vars, "\n")
 
+
 # 5. Create Results Directory----------------------------
 dir.create("04 R plots2", showWarnings = FALSE)
 
@@ -139,7 +141,7 @@ if (length(time_var) > 0) {
     p2 <- ggplot(my_data, aes_string(x = v, y = response_var, color = treatment_var)) +
       geom_point(aes(group = treatment_var), alpha = 0.6, size = 2) +
       theme_minimal(base_size = 14) +
-      facet_wrap(as.formula(paste("~", age_var[1]))) +
+      #facet_wrap(as.formula(paste("~", age_var[1]))) +
       labs(
         title = paste("Sperm motility vs", v, "(colored by treatment)"),
         x = "Time (min)", y = response_var, color = "Treatments"
@@ -151,14 +153,29 @@ p2
 
 
 #create group means using detected predictor variables
+# Identify which grouping variables are present
+group_vars <- c(
+  if (length(age_var) >= 1) age_var[1],
+  if (length(treatment_var) >= 1) treatment_var[1],
+  if (length(time_var) >= 1) time_var[1]
+)
+
+# Stop if none exist
+if (length(group_vars) == 0) {
+  stop("No age, treatment, or time variable detected. Cannot proceed with group means calculation.")
+}
+
+# Group and calculate means
 general_mean_SM <- my_data %>%
-  group_by(!!sym(age_var[1]), !!sym(treatment_var[1]), !!sym(time_var[1])) %>%
+  group_by(across(all_of(group_vars))) %>%
   summarise(
-    mean_SM = mean(!!sym(response_var), na.rm = TRUE),
-    se_SM = sd(!!sym(response_var)) / sqrt(n())
+    mean_SM = mean(.data[[response_var]], na.rm = TRUE),
+    se_SM = sd(.data[[response_var]], na.rm = TRUE) / sqrt(n())
   )
 
 glimpse(general_mean_SM)
+
+#order levels of time variable
 levels(general_mean_SM[[time_var[1]]]) <- c("0", "2", "4", "6")
 
 
@@ -166,7 +183,7 @@ levels(general_mean_SM[[time_var[1]]]) <- c("0", "2", "4", "6")
 ggplot() +
   geom_point(data = general_mean_SM, aes_string(x = time_var[1], y = "mean_SM",
            color = treatment_var[1]), size = 2) +
-  facet_wrap(as.formula(paste("~", age_var[1]))) +
+  #facet_wrap(as.formula(paste("~", age_var[1]))) +
   geom_line(data = general_mean_SM, aes_string(x = time_var[1], y = "mean_SM",
            group = treatment_var[1], color = treatment_var[1]),
            linewidth = 0.5,
@@ -182,4 +199,51 @@ ggplot() +
        y = response_var,
        color = "Treatment")
 
+cat("Running mixed-effects model...\n")
 
+
+
+# 7. Model Fitting----------------------------
+#first run a linear model without random effects
+model <- lm(as.formula(paste('mean_SM', "~", paste(predictors, collapse = " + "))), data = general_mean_SM)
+summary(model)
+anova(model)
+
+
+#determine the model type based on the data variables 
+#run a mixed effects model if ID column is detected
+library(lme4)
+
+#create model formular based on the number of predictors detected
+if (length(predictors) == 1) {
+  fixed_formula <- predictors[1]
+} else {
+  fixed_formula <- paste(predictors[1:min(2, length(predictors))], collapse = " * ")
+}
+
+#presence or absence of random effects based on ID column detection
+if (!is.null(id_col)) {
+  formula <- as.formula(paste(response_var, "~", fixed_formula, "+ (1|", id_col, ")"))
+} else {
+  formula <- as.formula(paste(response_var, "~", fixed_formula))
+}
+
+#Run linear mixed effects model or linear model based on ID column detection
+if (!is.null(id_col)) {
+  model <- lmer(formula, data = my_data, REML = FALSE)
+  model_type <- "Linear Mixed-Effects Model"
+} else {
+  model <- lm(as.formula(paste(response_var, "~", fixed_formula)), data = my_data)
+  model_type <- "Linear Model (no random effects)"
+}
+
+cat("Model type:", model_type, "\n")
+print(summary(model))
+vcov(model)
+
+
+
+summary_df <- tidy(model, effects = "fixed")
+
+# Save model summary to CSV
+write.csv(summary_df, file = "04 R plots2/mixed_effects_model_summary.csv", row.names = FALSE)

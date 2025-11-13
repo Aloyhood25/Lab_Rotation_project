@@ -1,31 +1,30 @@
 
 
+# Generic Sperm Motility Analysis Script
 
-# 0. Load Required Packages
-#----------------------------#
-
+#clear R's brain
+rm(list=ls())
+#Load Required Packages
 
 library(tidyverse)
 library(broom)
 library(ggplot2)
 library(dplyr)
 
-
-
-# 2. Load and Inspect my_data
+#Load and Inspect my_data
 #----------------------------#
-my_data <- read.csv('01 Raw data /seminal_fluid vs male age interaction.csv')
-#acat("my_dataset loaded successfully: ", file_path, "\n")
+my_data <- read.csv('01 Raw data/sperm_age vs SF_age.csv')
 head(my_data)
+str(my_data)
 
 # Clean column names
 names(my_data) <- make.names(names(my_data))
 
 cat("Variables detected:\n")
 print(names(my_data))
-head(my_data)
+
 #----------------------------#
-# 3. Identify Response Variable
+#Identify Response Variable
 #----------------------------#
 response_candidates <- grep("sperm.*motil", names(my_data), ignore.case = TRUE, value = TRUE)
 if (length(response_candidates) == 0) stop("No sperm motility variable found.")
@@ -33,7 +32,7 @@ response_var <- response_candidates[1]
 cat("Detected response variable:", response_var, "\n")
 
 #----------------------------#
-# 4. Identify Predictors and ID (Keyword-based)
+#Identify Predictors and ID (Keyword-based)
 #----------------------------#
 
 predictors <- setdiff(names(my_data), response_var)
@@ -99,7 +98,9 @@ cat("ID variable(s):", id_var, "\n")
 categorical_vars <- unique(c(treatment_var, species_var, age_var, time_var, id_var))
 numeric_vars <- unique(c(temp_var, conc_var))
 
-
+time_var
+age_var
+species_var
 # Fallback if nothing detected by keywords    
 if (length(categorical_vars) == 0) {
   categorical_vars <- predictors[sapply(my_data[predictors], function(x) is.character(x) || is.factor(x))]
@@ -157,6 +158,7 @@ if (length(time_var) > 0) {
 }
 p2
 
+#calculate mean sperm motility according to the available variables in the dataset
 
 #create group means using detected predictor variables
 general_mean_SM <- my_data %>%
@@ -170,7 +172,8 @@ glimpse(general_mean_SM)
 levels(general_mean_SM[[time_var[1]]]) <- c("0", "2", "4", "6")
 
 
-#Plot sperm motility over time variable, age variable, and treatment variables 
+
+#Plot mean sperm motility over time variable, age variable, and treatment variables 
 ggplot() +
   geom_point(data = general_mean_SM, aes_string(x = time_var[1], y = "mean_SM",
            color = treatment_var[1]), size = 2) +
@@ -189,3 +192,39 @@ ggplot() +
        x = "Time Points (min)",
        y = response_var,
        color = "Treatment")
+
+cat("Running mixed-effects model...\n")
+
+if (length(predictors) == 1) {
+  fixed_formula <- predictors[1]
+} else {
+  fixed_formula <- paste(predictors[1:min(2, length(predictors))], collapse = " * ")
+}
+
+if (!is.null(id_col)) {
+  formula <- as.formula(paste(response_var, "~", fixed_formula, "+ (1|", id_col, ")"))
+} else {
+  formula <- as.formula(paste(response_var, "~", fixed_formula))
+}
+
+if (!is.null(id_col)) {
+  model <- lmer(formula, data = my_data, REML = FALSE)
+  model_type <- "Linear Mixed-Effects Model"
+} else {
+  model <- lm(as.formula(paste(response_var, "~", fixed_formula)), data = my_data)
+  model_type <- "Linear Model (no random effects)"
+}
+
+cat("Model type:", model_type, "\n")
+print(summary(model))
+vcov(model)
+
+
+
+summary_df <- tidy(model, effects = "fixed")
+write.csv(summary_df, "results/model_summary.csv", row.names = FALSE)
+
+#----------------------------#
+# 8. Wrap up
+#----------------------------#
+cat("Analysis complete.\nResults and plots saved in 'results/' folder.\n")
