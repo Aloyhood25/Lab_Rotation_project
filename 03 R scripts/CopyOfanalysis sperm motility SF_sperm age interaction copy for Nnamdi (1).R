@@ -20,7 +20,7 @@ library(tidyverse)#this package contains all we need, is this not nice
 library(wesanderson)
 
 #load data into R
-my_data<-read.csv("01 raw data/sperm motility SF_sperm age interaction.csv",
+my_data<-read.csv("01 Raw data/sperm motility SF_sperm age interaction(1).csv",
                   header=T)
 
 #verify if your data loaded and if all variables are correctly assigned
