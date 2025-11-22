@@ -1,17 +1,22 @@
 #remove all objects from environment
 rm(list = ls())
 
+#create a working directory with folders for raw data, clean data, and plots
+#suggest code
+
+
 # 1. Load Required Packages----------------------------
 library(tidyverse)
 library(broom)
 library(ggplot2)
 library(dplyr)
-
-
+library(swirl)
 
 # 2. Load and Inspect my_data----------------------------
+#my_data <- read.csv('01 Raw data/seminal_fluid vs male age interaction.csv')
 my_data <- read.csv('01 Raw data/sperm_age vs SF_age.csv')
-#acat("my_dataset loaded successfully: ", file_path, "\n")
+
+#acat("my_data loaded successfully: ", file_path, "\n")
 head(my_data)
 
 # Clean column names
@@ -88,7 +93,6 @@ cat("Time variable(s):", time_var, "\n")
 cat("Concentration variable(s):", conc_var, "\n")
 cat("ID variable(s):", id_var, "\n")
 
-
 #----------------------------#
 # Combine detected variables-----------
 #----------------------------#
@@ -124,13 +128,13 @@ if(length(predictors)==0){
   stop("No predictor variables detected. Cannot generate plots.")
 }
 
-if(length(predictors)>2){
+# Example: Plot response vs each predictor
+if(length(predictors)==2){
   cat("More than two predictor variables detected. Generating plots for first two predictors only.\n")
-  predictors <- predictors[1:2]
-  # Example: Plot response vs each predictor
+  #predictors <- predictors[1:2]
   if (length(time_var) > 0) {
     for (v in time_var) {
-      p <- ggplot(my_data, aes_string(x = v, y = response_var, color = treatment_var)) +
+      p1 <- ggplot(my_data, aes_string(x = v, y = response_var, color = treatment_var)) +
         geom_point(aes(group = treatment_var), alpha = 0.6, size = 2) +
         theme_minimal(base_size = 14) +
         labs(
@@ -140,8 +144,22 @@ if(length(predictors)>2){
       
     }
   }
-  p
-}else{ cat("One or two predictor variables detected. Generating plots accordingly.\n")}
+  p1
+}else{  if (length(time_var) > 0) {
+  cat("Three or more predictor variables detected. Generating plots for first three predictors only.\n")
+  for (v in time_var) {
+    p2 <- ggplot(my_data, aes_string(x = v, y = response_var, color = treatment_var)) +
+      geom_point(aes(group = treatment_var), alpha = 0.6, size = 2) +
+      theme_minimal(base_size = 14) +
+      facet_wrap(as.formula(paste("~", age_var[1]))) +
+      labs(
+        title = paste("Sperm motility vs", v, "(colored by treatment)"),
+        x = "Time (min)", y = response_var, color = "Treatments"
+      )
+    
+  }
+}}
+
 
 if(length(predictors >=3)){
   cat("Three or more predictor variables detected. Generating plots for first three predictors only.\n")
@@ -151,7 +169,7 @@ if(length(predictors >=3)){
       p2 <- ggplot(my_data, aes_string(x = v, y = response_var, color = treatment_var)) +
         geom_point(aes(group = treatment_var), alpha = 0.6, size = 2) +
         theme_minimal(base_size = 14) +
-        #facet_wrap(as.formula(paste("~", age_var[1]))) +
+        facet_wrap(as.formula(paste("~", age_var[1]))) +
         labs(
           title = paste("Sperm motility vs", v, "(colored by treatment)"),
           x = "Time (min)", y = response_var, color = "Treatments"
@@ -159,12 +177,12 @@ if(length(predictors >=3)){
       
     }
   }
-  p2
+
 }else{ stop("One or two predictor variables detected. Generating plots accordingly.\n")}
  
 
 #create group means using detected predictor variables
-# Identify which grouping variables are present
+# Identify which group of variables are present
 group_vars <- c(
   if (length(age_var) >= 1) age_var[1],
   if (length(treatment_var) >= 1) treatment_var[1],
@@ -181,25 +199,41 @@ general_mean_SM <- my_data %>%
   group_by(across(all_of(group_vars))) %>%
   summarise(
     mean_SM = mean(.data[[response_var]], na.rm = TRUE),
-    se_SM = sd(.data[[response_var]], na.rm = TRUE) / sqrt(n())
+    se_SM = sd(.data[[response_var]], na.rm = TRUE) / sqrt(n()),
+    max_SM = max(.data[[response_var]], na.rm = TRUE),
+    min_SM = min(.data[[response_var]], na.rm = TRUE)
   )
 
-glimpse(general_mean_SM)
+#compare max and min sperm motility across the groups 
+max_min <- my_data %>%
+  group_by(across(all_of(group_vars))) %>%
+  summarise(
+    max_SM = max(.data[[response_var]], na.rm = TRUE),
+    min_SM = min(.data[[response_var]], na.rm = TRUE)
+  )
 
+
+glimpse(general_mean_SM)
 #order levels of time variable
 levels(general_mean_SM[[time_var[1]]]) <- c("0", "2", "4", "6")
 
 
 #Plot sperm motility over time variable, age variable, and treatment variables 
+#use a conditional statement to plot depending on the number of predictor variables detected
+
 ggplot() +
   geom_point(data = general_mean_SM, aes_string(x = time_var[1], y = "mean_SM",
-           color = treatment_var[1]), size = 2) +
-  #facet_wrap(as.formula(paste("~", age_var[1]))) +
+           color = treatment_var[1]), size = 3) +
+  facet_wrap(as.formula(paste("~", age_var[1]))) +
   geom_line(data = general_mean_SM, aes_string(x = time_var[1], y = "mean_SM",
            group = treatment_var[1], color = treatment_var[1]),
            linewidth = 0.5,
            alpha = 0.5) +
   theme_minimal() +
+  geom_point(data = max_min, aes_string(x = time_var[1], y = "max_SM",
+                                        color = treatment_var[1]), size = 4, alpha = 0.5) +
+  geom_point(data = max_min, aes_string(x = time_var[1], y = "min_SM",
+                                        color = treatment_var[1]), size = 2, alpha = 0.5)+
   geom_errorbar(data = general_mean_SM,
                 aes_string(x = time_var[1], y = "mean_SM",
                            ymin = "mean_SM - se_SM",
@@ -210,25 +244,32 @@ ggplot() +
        y = response_var,
        color = "Treatment")
 
-cat("Running mixed-effects model...\n")
 
-general_mean_SM
-predictors
+
+cat("Running statistical model...\n")
+
 # 7. Model Fitting----------------------------
+#load the required packages for mixed effects modeling and diagnostics
+library(lme4)
+library(lmerTest)
+library(DHARMa)
+library(ggfortify)
+
 #first run a linear model without random effects
-model <- lm(as.formula(paste('mean_SM', "~", paste(group_vars, collapse = " + "))), data = general_mean_SM)
-summary(model)
-anova(model)
+linear_model <- lm(as.formula(paste('mean_SM', "~", paste(group_vars, collapse = " + "))), data = general_mean_SM)
+summary(linear_model)
+anova(linear_model)
+autoplot(linear_model, smooth.color = NA)
+
 
 #determine the model type based on the data variables 
 #run a mixed effects model if ID column is detected
-library(lme4)
 
-#create model formular based on the number of predictors detected
+#create model formula based on the number of predictors detected
 if (length(predictors) == 1) {
-  fixed_formula <- predictors[1]
+  fixed_formula <- group_vars[1]
 } else {
-  fixed_formula <- paste(predictors[1:min(2, length(predictors))], collapse = " * ")
+  fixed_formula <- paste(group_vars[1:min(3, length(group_vars))], collapse = " * ")
 }
 
 #presence or absence of random effects based on ID column detection
@@ -246,17 +287,18 @@ if (!is.null(id_col)) {
   model <- lm(as.formula(paste(response_var, "~", fixed_formula)), data = my_data)
   model_type <- "Linear Model (no random effects)"
 }
-
+group_vars
+head(my_data)
 cat("Model type:", model_type, "\n")
 print(summary(model))
 vcov(model)
 
 #8. Find the emmeans ----------------------------
 library(emmeans)
-emm <- emmeans(model, specs = as.formula(paste("~", paste(group_vars, collapse = " + "))))
+emm <- emmeans(model, specs = as.formula(paste("~", paste(group_vars, collapse = " * "))))
 emm
 emm_plot <- as.data.frame(emm)
-
+emm_plot
 #pairwise comparisons within each time of measurement
 simp <- pairs(emm, simple = treatment_var)
 simp
