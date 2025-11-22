@@ -14,6 +14,7 @@
 #clear R's brain
 rm(list=ls())
 
+
 #load additional packages to have all the necessary functions for graphs and
 # available
 library(tidyverse)#this package contains all we need, is this not nice

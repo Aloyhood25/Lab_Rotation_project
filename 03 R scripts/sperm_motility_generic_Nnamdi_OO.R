@@ -329,9 +329,31 @@ ggplot()+
        color = "Treatment")
 
 
+# Check model diagnostics using DHARMa
+simulation_output <- simulateResiduals(fittedModel = model, n = 1000)
+
+# Plot residuals
+plot(simulation_output)
+testResiduals(simulation_output)
+testOutliers(simulation_output)
+testUniformity(simulation_output)
+testDispersion(simulation_output)
+testQuantiles(simulation_output)
+testZeroInflation(simulation_output)
+testCategorical(simulation_output, catPred = my_data[[treatment_var[1]]])
+
+#if tests indicate issues (p < 0.05), consider model refinement or consult a statistician.
 
 
+# 9. Model Summary and Visualization of Fixed Effects----------------------------
 summary_df <- tidy(model, effects = "fixed")
+summary_df
+ggplot(summary_df, aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = estimate - std.error, ymax = estimate + std.error), width = 0.2) +
+  labs(title = "Fixed Effects Estimates", x = "Terms", y = "Estimates") +
+  theme_minimal()
+
 
 # Save model summary to CSV
 write.csv(summary_df, file = "04 R plots2/mixed_effects_model_summary.csv", row.names = FALSE)
