@@ -22,6 +22,7 @@ cat("Variables detected:\n")
 print(names(my_data))
 head(my_data)
 
+my_data <- filter(my_data )
 # 3. Identify Response Variable----------------------------
 response_candidates <- grep("sperm.*motil", names(my_data), ignore.case = TRUE, value = TRUE)
 if (length(response_candidates) == 0) stop("No sperm motility variable found.")

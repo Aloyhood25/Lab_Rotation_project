@@ -22,7 +22,7 @@ library(dplyr)
 ```
 
 
-Now create a working directory for our project with folders for files 
+Now create a working directory for our project with folders for files. This code creates a function 'init_project' which when ran create a directory for the project and sets it the working directory in your chosen location. 
 ```{r}
 #check if project directory already exists, otherwise create one
 init_project <- function(path){
@@ -43,9 +43,9 @@ init_project <- function(path){
 init_project("~/Desktop/SpermMotility_Project")
 ```
 
-The code above creates a folder on your desktop. YOu go ahead and add the csv file for your data in the raw files folder 
+You go ahead and add the csv file for your data in the raw files folder. Also create an R project and save it in the same directory.
 
-Now we can import the data 
+Now we can import the data. This lets you manually choose the file you want from your computer.
 
 ```{r}
 my_data <- read.csv(file.choose())
@@ -57,7 +57,7 @@ cat("Variables detected:\n")
 ```
 
 
-We need to identify the response variable from our data using keyword 'sperm motility' and set it apart from other variables 
+We need to identify the response variable from our data using keyword 'sperm motility' and set it apart from other variables. This code detects any column that has 'sperm motility' in the name.
 ```{r}
 # 3. Identify Response Variable----------------------------
 response_candidates <- grep("sperm.*motil", names(my_data), ignore.case = TRUE, value = TRUE)
@@ -146,7 +146,8 @@ cat("Categorical predictors:", categorical_vars, "\n")
 cat("Numeric predictors:", numeric_vars, "\n")
 ```
 
-Now our variables have been identified and classified. We can go ahead and produce some visualisations for our data. 
+Now our variables have been identified and classified. We can go ahead and produce some visualizations for our data. 
+These codes will produce different scatterplots depending on the number of predictor variables present in the data. 
 ```{r}
 # 6. Visualization with ggplot2----------------------------
 cat("Generating exploratory plots...\n")
@@ -294,7 +295,7 @@ autoplot(linear_model, smooth.color = NA)
 
 ```
 
-Now to model selection. 
+Now to model selection. If there's an ID column detected in the data, the script automatically chooses a linear mixed-effect model 
 ```{r}
 
 # 7. Model Fitting----------------------------
